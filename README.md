@@ -1,4 +1,1 @@
-# ytpmd
-YouTrackProjectManagmentDashboard
-* first
-* second
+# YTPMD readme
