@@ -25,7 +25,7 @@ namespace ytpmd.Controllers
             const string version_str = "Sprint 4";
             var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", "s.arlyapov", "0J9c5V0c9C7j3V8w");
             var issues_service = connection.CreateIssuesService();
-            var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} #me", 0, 100);
+            var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "}", 0, 100);
             var issues = issuse_project.GetAwaiter().GetResult();
             
             DateTime version_start = new DateTime();
