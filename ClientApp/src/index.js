@@ -1,5 +1,7 @@
-import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/css/bootstrap-theme.css';
+import 'uikit/dist/js/uikit.min';
+import 'uikit/dist/js/uikit-icons.min';
+import 'uikit/dist/css/uikit.css';
+
 import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
