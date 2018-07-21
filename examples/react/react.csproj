@@ -15,6 +15,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="examples\**" />
+    <Content Remove="examples\**" />
+    <EmbeddedResource Remove="examples\**" />
+    <None Remove="examples\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="docs\**" />
+    <Content Remove="docs\**" />
+    <EmbeddedResource Remove="docs\**" />
+    <None Remove="docs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Don't publish the SPA source files, but do show them in the project files list -->
     <Content Remove="$(SpaRoot)**" />
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
