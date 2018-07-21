@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Cookies from 'universal-cookie';
 
 export class Login extends Component {
   displayName = Login.name
@@ -11,7 +12,26 @@ export class Login extends Component {
 
   handleSubmit(event) {
     const data = new FormData(event.target);
-    alert('A name was submitted: ' + data.get('email'));
+    const auth_data = {
+        "Email" : data.get("email"),
+        "Password" : data.get("password"),
+        "ConfirmPassword" : data.get("password"),
+    };
+    fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {'Content-Type' : 'application/json'},
+        body: auth_data.toJson(),
+    }).then(response => {
+        fetch('/api/auth/token', {
+            method: 'POST',
+            headers: {'Content-Type' : 'application/json'},
+            body: auth_data.toJson(),
+        }).then(response => {
+            const cookies = new Cookies();
+            cookies.set('token', response.json()["token"], { path: '/' });
+        });
+    });
+
     event.preventDefault();
   }
 

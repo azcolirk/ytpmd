@@ -24,80 +24,91 @@ export class ProjectDashBoard extends Component {
      {label: 'Статус', type: 'string'},
      {label: 'Start', type: 'datetime'},
      {label: 'End', type: 'datetime'}],
-     [ 't-1000', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 1, 16, 30, 0) ],
-     [ 't-1000', 'in work',   new Date(2018, 7, 1, 16, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1000', 'open',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 9, 30, 0) ],
-     [ 't-1000', 'in work',   new Date(2018, 7, 3, 9, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1000', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 11, 10, 0, 0) ],
-     [ 't-1000', 'testing',   new Date(2018, 7, 11, 10, 0, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1100', 'open',      new Date(2018, 7, 1, 12, 30, 0), new Date(2018, 7, 1, 16, 30, 0) ],
-     [ 't-1100', 'in work',   new Date(2018, 7, 1, 16, 30, 0), new Date(2018, 7, 2, 17, 30, 0) ],
-     [ 't-1100', 'wait test',   new Date(2018, 7, 2, 17, 30, 0), new Date(2018, 7, 5, 10, 0, 0) ],
-     [ 't-1100', 'testing',   new Date(2018, 7, 5, 10, 0, 0), new Date(2018, 7, 6, 17, 0, 0) ],
-     [ 't-1200', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1200', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1200', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1210', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1210', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1210', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1220', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1220', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1220', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1230', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1230', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1230', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1240', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1240', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1240', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1250', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1250', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1250', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1260', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1260', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1260', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1270', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1270', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1270', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1280', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1280', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1280', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1290', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1290', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1290', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1201', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1201', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1201', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1202', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1202', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1202', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1203', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1203', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1203', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1204', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1204', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1204', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1205', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1205', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1205', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1206', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1206', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1206', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-     [ 't-1207', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-     [ 't-1207', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-     [ 't-1207', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1000', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 1, 16, 30, 0) ],
+    //  [ 't-1000', 'in work',   new Date(2018, 7, 1, 16, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1000', 'open',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 9, 30, 0) ],
+    //  [ 't-1000', 'in work',   new Date(2018, 7, 3, 9, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1000', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 11, 10, 0, 0) ],
+    //  [ 't-1000', 'testing',   new Date(2018, 7, 11, 10, 0, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1100', 'open',      new Date(2018, 7, 1, 12, 30, 0), new Date(2018, 7, 1, 16, 30, 0) ],
+    //  [ 't-1100', 'in work',   new Date(2018, 7, 1, 16, 30, 0), new Date(2018, 7, 2, 17, 30, 0) ],
+    //  [ 't-1100', 'wait test',   new Date(2018, 7, 2, 17, 30, 0), new Date(2018, 7, 5, 10, 0, 0) ],
+    //  [ 't-1100', 'testing',   new Date(2018, 7, 5, 10, 0, 0), new Date(2018, 7, 6, 17, 0, 0) ],
+    //  [ 't-1200', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1200', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1200', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1210', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1210', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1210', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1220', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1220', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1220', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1230', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1230', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1230', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1240', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1240', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1240', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1250', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1250', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1250', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1260', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1260', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1260', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1270', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1270', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1270', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1280', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1280', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1280', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1290', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1290', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1290', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1201', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1201', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1201', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1202', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1202', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1202', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1203', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1203', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1203', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1204', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1204', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1204', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1205', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1205', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1205', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1206', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1206', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1206', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
+    //  [ 't-1207', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
+    //  [ 't-1207', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
+    //  [ 't-1207', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
   ];
 
   constructor(props) {
     super(props);
     this.state = { timeline_data: [], loading: true };
 
-    new Promise(function(resolve, reject) {
-      setTimeout(function(){
-        resolve(ProjectDashBoard.raw_timeline_data);
-      }, 1000);
-    }).then(response => {
-      this.setState({ timeline_data: response, loading: false });
-    });
+    fetch('api/SampleData/WeatherForecasts')
+      .then(response => response.json())
+      .then(data => {
+        var new_data = ProjectDashBoard.raw_timeline_data;
+        data.forEach(function(element) {
+          new_data.push([element.id, element.status, new Date(parseInt(element.start) * 1000), new Date(parseInt(element.end) * 1000)]);
+        });
+        // {id: "ba-295", status: "В обработке", start: "1531094400", end: "1531969869"},…]
+        this.setState({ timeline_data: new_data, loading: false });
+      });
+
+    // new Promise(function(resolve, reject) {
+    //   setTimeout(function(){
+    //     resolve(ProjectDashBoard.raw_timeline_data);
+    //   }, 1000);
+    // }).then(response => {
+    //   this.setState({ timeline_data: response, loading: false });
+    // });
   }
 
   static renderTimeLine(timeline_data) {
