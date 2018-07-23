@@ -25,7 +25,7 @@ namespace ytpmd.Controllers
             const string version_str = "Sprint 4";
             var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", "s.arlyapov", "0J9c5V0c9C7j3V8w");
             var issues_service = connection.CreateIssuesService();
-            var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "}", 0, 100);
+            var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} ", 0, 100);
             var issues = issuse_project.GetAwaiter().GetResult();
             
             DateTime version_start = new DateTime();
@@ -63,8 +63,11 @@ namespace ytpmd.Controllers
                         if (f.Name.Equals("Спринт")) {
                             foreach (var cf in f.To.AsCollection()) {
                                 var r = JsonConvert.DeserializeObject<List<String>>(cf);
+                                if (r.Capacity == 0)
+                                    continue;
                                 Console.WriteLine("     r : " + r.First() + " cmp :" + (r.First() == version_str));
                                 if (r.First().Equals(version_str) && !last_update.ContainsKey(i.Id)) {
+                                    if (version_start < c.ForField("updated").To.AsDateTime())
                                     last_update.Add(i.Id, c.ForField("updated").To.AsDateTime());
                                 }
                             }
