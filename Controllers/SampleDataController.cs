@@ -28,6 +28,7 @@ namespace ytpmd.Controllers
             var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} ", 0, 100);
             var issues = issuse_project.GetAwaiter().GetResult();
             
+            // Поиск параметров спринта (время начала)
             DateTime version_start = new DateTime();
             var agilesettings = new AgileSettings();
             var boards_service = connection.CreateAgileBoardService();
@@ -35,7 +36,7 @@ namespace ytpmd.Controllers
             foreach (var b in boards) {
                 if (!b.Name.Equals("Разработка проекта BILL-admin"))
                     continue;
-                Console.WriteLine("b : " + b.Name);
+                //Console.WriteLine("b : " + b.Name);
                 foreach (var s in b.Sprints) {
                     var ss = boards_service.GetSprint(b.Id, s.Id).GetAwaiter().GetResult();
                     /*Console.WriteLine("s : " + ss.Start.ToString());
@@ -56,7 +57,9 @@ namespace ytpmd.Controllers
             List<ResultData> res = new List<ResultData>();
             Dictionary<String, DateTime> last_update = new Dictionary<String, DateTime>();
             foreach (var i in issues) {
+                Console.WriteLine("t : " + i.Id);
                 var issues_changes = issues_service.GetChangeHistoryForIssue(i.Id);
+                ResultData last_state = null;
                 foreach (var c in issues_changes.GetAwaiter().GetResult()) {
                     String state_name = "";
                     foreach (var f in c.Fields) {
@@ -74,6 +77,7 @@ namespace ytpmd.Controllers
                         }
                         if (f.Name.Equals("State") || f.Name.Equals("Статус")) {
                             state_name = f.Name;
+                            Console.WriteLine("     s : " + JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).From.AsString()).First());
                             break;
                         }
                     }
@@ -85,9 +89,24 @@ namespace ytpmd.Controllers
                         //last_update.Add(i.Id, new DateTime(1970, 1, 1, 0, 0, 0));
                         last_update.Add(i.Id, new DateTime(version_start.Year, version_start.Month, version_start.Day, 0, 0, 0));
                     }
-                    if (datetime < last_update[i.Id])
+
+                    last_state = new ResultData {
+                        Id = i.Id,
+                        Status = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).To.AsString()).First(),
+                        Start = ((Int32)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString()
+                    };
+
+                    if (datetime < last_update[i.Id]) {
                         continue;
-                    res.Add(new ResultData {
+                    } else if (Convert.ToInt32(last_state.Start) < (Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds) {
+                        Console.WriteLine("     last stte : " + last_state.Status);
+                        last_state.Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
+                        last_state.End = ((Int32)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
+                        res.Add(last_state);
+                        last_state = null;
+                    }
+
+                    res.Add( new ResultData {
                         Id = i.Id,
                         Status = state,
                         /*Start = "new DateTime(" + last_update[i.Id].Year.ToString() + "," + last_update[i.Id].Month.ToString() + "," + last_update[i.Id].Day.ToString() + "," +last_update[i.Id].Hour.ToString() + "," + last_update[i.Id].Minute.ToString() + "," + last_update[i.Id].Second.ToString() + ")",
@@ -99,16 +118,14 @@ namespace ytpmd.Controllers
                     });
                     last_update[i.Id] = datetime;
                 }
+                if (last_state != null) {
+                    last_state.Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
+                    last_state.End = ((Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
+                    res.Add(last_state);
+                    Console.WriteLine("     last stte : " + last_state.Status);
+                }
             }
             return res;
-
-            /*var rng = new Random();
-            return Enumerable.Range(1, 7).Select(index => new WeatherForecast
-            {
-                DateFormatted = DateTime.Now.AddDays(index).ToString("D"),
-                /*TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            });*/
         }
 
         public class ResultData
