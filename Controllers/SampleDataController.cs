@@ -20,7 +20,7 @@ namespace ytpmd.Controllers
 
         [HttpGet("[action]")]
         //public IEnumerable<WeatherForecast> WeatherForecasts()
-        public IEnumerable<ResultData> WeatherForecasts()
+        public ResultData WeatherForecasts()
         {
             const string version_str = "Sprint 4";
             var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", "s.arlyapov", "0J9c5V0c9C7j3V8w");
@@ -30,6 +30,7 @@ namespace ytpmd.Controllers
             
             // Поиск параметров спринта (время начала)
             DateTime version_start = new DateTime();
+            DateTime version_end = new DateTime();
             var agilesettings = new AgileSettings();
             var boards_service = connection.CreateAgileBoardService();
             var boards = boards_service.GetAgileBoards().GetAwaiter().GetResult();
@@ -43,6 +44,7 @@ namespace ytpmd.Controllers
                     Console.WriteLine("v : " + ss.Version);*/
                     if (ss.Version.Equals(version_str)) {
                         version_start = new DateTime(ss.Start.Value.DateTime.Year, ss.Start.Value.DateTime.Month, ss.Start.Value.DateTime.Day, 0, 0, 0);
+                        version_end = new DateTime(ss.Finish.Value.DateTime.Year, ss.Finish.Value.DateTime.Month, ss.Finish.Value.DateTime.Day, 0, 0, 0);
                     }
                     /*foreach (var p in b.Projects) {
                         Console.WriteLine("p : " + p.Id);
@@ -54,12 +56,12 @@ namespace ytpmd.Controllers
 
             }
             
-            List<ResultData> res = new List<ResultData>();
+            List<ResultList> res_list = new List<ResultList>();
             Dictionary<String, DateTime> last_update = new Dictionary<String, DateTime>();
             foreach (var i in issues) {
                 Console.WriteLine("t : " + i.Id);
                 var issues_changes = issues_service.GetChangeHistoryForIssue(i.Id);
-                ResultData last_state = null;
+                ResultList last_state = null;
                 foreach (var c in issues_changes.GetAwaiter().GetResult()) {
                     String state_name = "";
                     foreach (var f in c.Fields) {
@@ -90,7 +92,7 @@ namespace ytpmd.Controllers
                         last_update.Add(i.Id, new DateTime(version_start.Year, version_start.Month, version_start.Day, 0, 0, 0));
                     }
 
-                    last_state = new ResultData {
+                    last_state = new ResultList {
                         Id = i.Id,
                         Status = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).To.AsString()).First(),
                         Start = ((Int32)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString()
@@ -102,11 +104,11 @@ namespace ytpmd.Controllers
                         Console.WriteLine("     last stte : " + last_state.Status);
                         last_state.Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
                         last_state.End = ((Int32)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
-                        res.Add(last_state);
+                        res_list.Add(last_state);
                         last_state = null;
                     }
 
-                    res.Add( new ResultData {
+                    res_list.Add( new ResultList {
                         Id = i.Id,
                         Status = state,
                         /*Start = "new DateTime(" + last_update[i.Id].Year.ToString() + "," + last_update[i.Id].Month.ToString() + "," + last_update[i.Id].Day.ToString() + "," +last_update[i.Id].Hour.ToString() + "," + last_update[i.Id].Minute.ToString() + "," + last_update[i.Id].Second.ToString() + ")",
@@ -121,15 +123,35 @@ namespace ytpmd.Controllers
                 if (last_state != null) {
                     last_state.Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
                     last_state.End = ((Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
-                    res.Add(last_state);
+                    res_list.Add(last_state);
                     Console.WriteLine("     last stte : " + last_state.Status);
                 }
             }
-            return res;
+            
+            return new ResultData {
+                ListData = res_list,
+                Sprint = version_str,
+                SprintStart = version_start.ToString("dd.MM.yy"),
+                SprintEnd = version_end.ToString("dd.MM.yy"),
+                Project = "Разработка проекта BILL-admin"
+                };
         }
 
-        public class ResultData
-        {
+        public class ResultData {
+            [JsonProperty("sprint")]
+            public string Sprint { get; set; }
+            [JsonProperty("sprintstart")]
+            public string SprintStart { get; set; }
+            [JsonProperty("sprintend")]
+            public string SprintEnd { get; set; }
+            [JsonProperty("project")]
+            public string Project { get; set; }
+            [JsonProperty("listdata")]
+            public List<ResultList> ListData;
+
+        }
+
+        public class ResultList {
             public string Id { get; set; }
             public string Status { get; set; }
             public string Start { get; set; }
