@@ -89,17 +89,27 @@ export class ProjectDashBoard extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { timeline_data: [], loading: true };
+    this.state = { timeline_data: [],
+      sprint: "Loading...",
+      sprintstart: "Loading...",
+      sprintend: "Loading...",
+      proect: "Loading...",
+      loading: true };
 
     fetch('api/SampleData/WeatherForecasts')
       .then(response => response.json())
       .then(data => {
         var new_data = ProjectDashBoard.raw_timeline_data;
-        data.forEach(function(element) {
+        data.listdata.forEach(function(element) {
           new_data.push([element.id, element.status, new Date(parseInt(element.start) * 1000), new Date(parseInt(element.end) * 1000)]);
         });
         // {id: "ba-295", status: "В обработке", start: "1531094400", end: "1531969869"},…]
-        this.setState({ timeline_data: new_data, loading: false });
+        this.setState({ timeline_data: new_data,
+          sprint: data.sprint,
+          sprintstart: data.sprintstart,
+          sprintend: data.sprintend,
+          project: data.project,
+          loading: false });
       });
 
     // new Promise(function(resolve, reject) {
@@ -120,11 +130,11 @@ export class ProjectDashBoard extends Component {
 
   render() {
     const url = window.location.href;
-    const project_name = 'YTPMD';
-    const sprint_name = 'SPRINT';
-    const sprint_start_date = '2018-07-21 19:00:00';
-    const sprint_end_date = '2018-07-22 7:00:00';
-    const title = 'Проект "' + project_name + '" - "' + sprint_name + '" (' + sprint_start_date + ' - ' + sprint_end_date + ')';
+    const project_name = this.state.loading ? 'YTPMD' : this.state.project;
+    const sprint_name = this.state.loading ? 'SPRINT' : this.state.sprint;
+    const sprint_start_date = this.state.loading ? "Loading..." : this.state.sprintstart;
+    const sprint_end_date = this.state.loading ? "Loading..." : this.state.sprintend;
+    const title = '"' + project_name + '" - "' + sprint_name + '" (' + sprint_start_date + ' - ' + sprint_end_date + ')';
     const project_employee = {
       'planning' : ['Jake', 'John', 'Ivan'],
       'project' : ['Katrine', 'Vivaldi', 'John'],
