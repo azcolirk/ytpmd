@@ -10,20 +10,16 @@ using Newtonsoft.Json;
 
 namespace ytpmd.Controllers
 {
-    [Route("api/[controller]")]
-    public class SampleDataController : Controller
+    [Route("")]
+    public class QueryController : Controller
     {
-        private static string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        [HttpGet("[action]")]
+        [Route("api/sprint/summary")]
+        [HttpGet]
         //public IEnumerable<WeatherForecast> WeatherForecasts()
-        public ResultData WeatherForecasts()
+        public ResultData Get()
         {
             const string version_str = "Sprint 4";
-            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", "s.arlyapov", "0J9c5V0c9C7j3V8w");
+            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", "", "");
             var issues_service = connection.CreateIssuesService();
             var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} ", 0, 100);
             var issues = issuse_project.GetAwaiter().GetResult();
