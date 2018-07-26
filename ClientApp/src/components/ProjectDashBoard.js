@@ -15,14 +15,19 @@ function time_to_str(_time) {
          min + "м";
 }
 
+function id_to_link(id) {
+  return '<a href="http://youtrack.ispsystem.net:8080/issue/' + id + '" target="_blank">' + id + '</a>';
+}
+
 export class ProjectDashBoard extends Component {
   displayName = ProjectDashBoard.name
 
   static raw_timeline_data = [
     [{label: 'Задача', type: 'string'},
      {label: 'Статус', type: 'string'},
-     {label: 'Start', type: 'datetime'},
-     {label: 'End', type: 'datetime'}],
+     {label: 'Start', type: 'datetime', pattern: 'dd MMM yyyy HH:mm'}, // 17 янв 2018 17:16
+     {label: 'End', type: 'datetime', pattern: 'dd MMM yyyy HH:mm'},
+    ],
   ];
 
   constructor(props) {
@@ -32,25 +37,62 @@ export class ProjectDashBoard extends Component {
       sprintstart: "",
       sprintend: "",
       proect: "",
+      project_tasks: {
+        on_sprint_start: 0,
+        added_during_sprint: 0,
+        removed_during_sprint: 0,
+      },
+      project_time: {
+        planning: 0,
+        project: 0,
+        development: 0,
+        testing: 0,
+      },
       loading: true };
 
-    fetch('api/sprint/summary')
+    fetch('api/YouTrackTest/Dashboard')
       .then((response) => {
         console.log(response);
         return response.json();
       })
       .then(data => {
         var new_data = ProjectDashBoard.raw_timeline_data;
-        data.listdata.forEach(function(element) {
-          new_data.push([element.id, element.status, new Date(parseInt(element.start) * 1000), new Date(parseInt(element.end) * 1000)]);
+        var map = new Map();
+        data.listdata.forEach(function(e) {
+          if (map.has(e.id) === false) {
+            console.log("new array for " + e.id);
+            map.set(e.id, []);
+          }
+          map.get(e.id).push({
+            status: e.status, 
+            start: new Date(parseInt(e.start) * 1000), 
+            end: new Date(parseInt(e.end) * 1000)
+          });
         });
 
-        // {
-        //   id: "ba-295", 
-        //   status: "В обработке", 
-        //   start: "1531094400", 
-        //   end: "1531969869"
-        // }
+        console.log(map);
+
+
+
+        map.forEach((value, key, map) => {
+          console.log(key);
+          console.log(value);
+          if (value.length > 1 || value[0].status !== "Готово") {
+            value.forEach(function(e) {
+              new_data.push(
+                [
+                  key, 
+                  e.status, 
+                  e.start, 
+                  e.end
+                ]
+              );
+            });
+          }
+        });
+
+        console.log(new_data);
+
         this.setState({ 
           timeline_data: new_data,
           sprint: data.sprint,
@@ -64,7 +106,7 @@ export class ProjectDashBoard extends Component {
 
   render() {
     let html = this.state.loading ? 
-      <div class="uk-container" >
+      <div className="uk-container" >
         <span  data-uk-spinner="ratio: 5" className="uk-position-center uk-text-center"></span>
       </div>
     : 
@@ -102,17 +144,7 @@ export class ProjectDashBoard extends Component {
     const employee_testing = project_employee['testing'].map(function(name, id){
       return <li key={id}>{name}</li>;
     });
-    const project_tasks = {
-      'on_sprint_start': 70,
-      'added_during_sprint': 15,
-      'removed_during_sprint': 6,
-    };
-    const project_time = {
-      'planning': 7000,
-      'project': 1500,
-      'development': 60,
-      'testing': 6,
-    };
+
     const project_tasks_total =
     <div className="uk-text-meta">
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -120,7 +152,7 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Задач на начало спринта:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{project_tasks['on_sprint_start']} шт.</div>
+          <div className="uk-panel">{state.project_tasks.on_sprint_start} шт.</div>
         </div>
       </div>
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -128,7 +160,7 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Задач добавлено в спринт:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{project_tasks['added_during_sprint']} шт.</div>
+          <div className="uk-panel">{state.project_tasks.added_during_sprint} шт.</div>
         </div>
       </div>
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -136,7 +168,7 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Задач удалено из спринта:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{project_tasks['removed_during_sprint']} шт.</div>
+          <div className="uk-panel">{state.project_tasks.removed_during_sprint} шт.</div>
         </div>
       </div>
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -144,7 +176,7 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Задач на конец спринта:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{project_tasks['on_sprint_start'] + project_tasks['added_during_sprint'] - project_tasks['removed_during_sprint']} шт.</div>
+          <div className="uk-panel">{state.project_tasks.on_sprint_start + state.project_tasks.added_during_sprint - state.project_tasks.removed_during_sprint} шт.</div>
         </div>
       </div>
     </div>;
@@ -156,7 +188,7 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Время планирования:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(project_time['planning'])}</div>
+          <div className="uk-panel">{time_to_str(state.project_time.planning)}</div>
         </div>
       </div>
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -164,7 +196,7 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Время проектирования:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(project_time['project'])}</div>
+          <div className="uk-panel">{time_to_str(state.project_time.project)}</div>
         </div>
       </div>
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -172,7 +204,7 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Время разработки:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(project_time['development'])}</div>
+          <div className="uk-panel">{time_to_str(state.project_time.development)}</div>
         </div>
       </div>
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -180,14 +212,11 @@ export class ProjectDashBoard extends Component {
           <div className="uk-panel" >Время тестирования:</div>
         </div>
         <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(project_time['testing'])}</div>
+          <div className="uk-panel">{time_to_str(state.project_time.testing)}</div>
         </div>
       </div>
     </div>;
-
-    const timeline = 
-      <TimeLineChart graphName="timeline" graphData={state.timeline_data}/>;
-  
+    const colors = ['#e30000','#fed74a','#7dbd36', '#ff7bc3', '#92e1d5', '#42a3df', '#246512'];
     return (
         <div className="uk-padding uk-grid-divider uk-child-width-expand@s" data-uk-grid>
           <div className="uk-width-3-4">
@@ -201,8 +230,8 @@ export class ProjectDashBoard extends Component {
               </div>
             </div>
             <hr className="uk-divider-icon"/>
-            <div className="uk-container">
-              {timeline}
+            <div className="uk-container uk-padding-remove uk-margin-remove">
+              <TimeLineChart graphName="timeline" graphData={state.timeline_data} graphColors={colors}/>
             </div>
           </div>
           <div>

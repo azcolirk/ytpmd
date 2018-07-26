@@ -53,7 +53,12 @@ namespace ytpmd.Controllers
         public async Task<ResultData> Dashboard()
         {
             const string version_str = "Sprint 4";
-            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", "s.arlyapov", "0J9c5V0c9C7j3V8w");
+            YouTrackCredential credential;
+            using (StreamReader r = new StreamReader("credential.json"))
+            {
+                credential = JsonConvert.DeserializeObject<YouTrackCredential>(r.ReadToEnd());
+            }
+            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
 
             // Поиск параметров спринта (время начала)
             DateTime version_start = new DateTime();
@@ -82,8 +87,10 @@ namespace ytpmd.Controllers
 			}
 
             var issues_service = connection.CreateIssuesService();
-            var issues = await issues_service.GetIssuesInProject("ba", "#{" + version_str + "} ", 0, 100);
-          
+            var ba_issues = await issues_service.GetIssuesInProject("ba", "#{" + version_str + "}", 0, 250);
+            var bc_issues = await issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend", 0, 250);
+            var issues = ba_issues.Concat(bc_issues);
+
 			var _issues_changes = new List<Task<(string, IEnumerable<Change>)>>();
 
 			foreach (var i in issues) {
