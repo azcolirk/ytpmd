@@ -7,9 +7,16 @@ using YouTrackSharp;
 using YouTrackSharp.Issues;
 using YouTrackSharp.AgileBoards;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace ytpmd.Controllers
 {
+    public class YouTrackCredential
+    {
+        public string username;
+        public string password;
+    }
+
     [Route("")]
     public class QueryController : Controller
     {
@@ -19,7 +26,12 @@ namespace ytpmd.Controllers
         public ResultData Get()
         {
             const string version_str = "Sprint 4";
-            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", "", "");
+            YouTrackCredential credential;
+            using (StreamReader r = new StreamReader("credential.json"))
+            {
+                credential = JsonConvert.DeserializeObject<YouTrackCredential>(r.ReadToEnd());
+            }
+            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
             var issues_service = connection.CreateIssuesService();
             var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} ", 0, 100);
             var issues = issuse_project.GetAwaiter().GetResult();
