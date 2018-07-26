@@ -33,9 +33,9 @@ namespace ytpmd.Controllers
             }
             var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
             var issues_service = connection.CreateIssuesService();
-            var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} ", 0, 100);
-            var issues = issuse_project.GetAwaiter().GetResult();
-            
+            var ba_issues = issues_service.GetIssuesInProject("ba", "#{" + version_str + "}", 0, 250).GetAwaiter().GetResult();
+            var issues = issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend", 0, 250).GetAwaiter().GetResult();
+
             // Поиск параметров спринта (время начала)
             DateTime version_start = new DateTime();
             DateTime version_end = new DateTime();
