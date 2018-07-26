@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { TimeLineChart } from './TimeLineChart';
 
-
 function time_to_str(_time) {
   var min = _time % 60;
   var _hour = (_time / 60).toFixed();
@@ -24,116 +23,66 @@ export class ProjectDashBoard extends Component {
      {label: 'Статус', type: 'string'},
      {label: 'Start', type: 'datetime'},
      {label: 'End', type: 'datetime'}],
-    //  [ 't-1000', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 1, 16, 30, 0) ],
-    //  [ 't-1000', 'in work',   new Date(2018, 7, 1, 16, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1000', 'open',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 9, 30, 0) ],
-    //  [ 't-1000', 'in work',   new Date(2018, 7, 3, 9, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1000', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 11, 10, 0, 0) ],
-    //  [ 't-1000', 'testing',   new Date(2018, 7, 11, 10, 0, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1100', 'open',      new Date(2018, 7, 1, 12, 30, 0), new Date(2018, 7, 1, 16, 30, 0) ],
-    //  [ 't-1100', 'in work',   new Date(2018, 7, 1, 16, 30, 0), new Date(2018, 7, 2, 17, 30, 0) ],
-    //  [ 't-1100', 'wait test',   new Date(2018, 7, 2, 17, 30, 0), new Date(2018, 7, 5, 10, 0, 0) ],
-    //  [ 't-1100', 'testing',   new Date(2018, 7, 5, 10, 0, 0), new Date(2018, 7, 6, 17, 0, 0) ],
-    //  [ 't-1200', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1200', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1200', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1210', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1210', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1210', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1220', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1220', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1220', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1230', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1230', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1230', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1240', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1240', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1240', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1250', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1250', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1250', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1260', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1260', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1260', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1270', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1270', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1270', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1280', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1280', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1280', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1290', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1290', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1290', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1201', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1201', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1201', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1202', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1202', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1202', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1203', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1203', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1203', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1204', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1204', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1204', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1205', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1205', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1205', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1206', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1206', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1206', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
-    //  [ 't-1207', 'open',      new Date(2018, 7, 1, 8, 30, 0), new Date(2018, 7, 2, 16, 30, 0) ],
-    //  [ 't-1207', 'in work',   new Date(2018, 7, 2, 16, 30, 0), new Date(2018, 7, 3, 17, 30, 0) ],
-    //  [ 't-1207', 'wait test',   new Date(2018, 7, 3, 17, 30, 0), new Date(2018, 7, 12, 17, 0, 0) ],
   ];
 
   constructor(props) {
     super(props);
     this.state = { timeline_data: [],
-      sprint: "Loading...",
-      sprintstart: "Loading...",
-      sprintend: "Loading...",
-      proect: "Loading...",
+      sprint: "",
+      sprintstart: "",
+      sprintend: "",
+      proect: "",
       loading: true };
 
-    fetch('api/SampleData/WeatherForecasts')
-      .then(response => response.json())
+    fetch('api/sprint/summary')
+      .then((response) => {
+        console.log(response);
+        return response.json();
+      })
       .then(data => {
         var new_data = ProjectDashBoard.raw_timeline_data;
         data.listdata.forEach(function(element) {
           new_data.push([element.id, element.status, new Date(parseInt(element.start) * 1000), new Date(parseInt(element.end) * 1000)]);
         });
-        // {id: "ba-295", status: "В обработке", start: "1531094400", end: "1531969869"},…]
-        this.setState({ timeline_data: new_data,
+
+        // {
+        //   id: "ba-295", 
+        //   status: "В обработке", 
+        //   start: "1531094400", 
+        //   end: "1531969869"
+        // }
+        this.setState({ 
+          timeline_data: new_data,
           sprint: data.sprint,
           sprintstart: data.sprintstart,
           sprintend: data.sprintend,
           project: data.project,
-          loading: false });
+          loading: false 
+        });
       });
-
-    // new Promise(function(resolve, reject) {
-    //   setTimeout(function(){
-    //     resolve(ProjectDashBoard.raw_timeline_data);
-    //   }, 1000);
-    // }).then(response => {
-    //   this.setState({ timeline_data: response, loading: false });
-    // });
   }
-
-  static renderTimeLine(timeline_data) {
-    return (
-      <TimeLineChart graphName="timeline" graphData={timeline_data}/>
-    );
-  }
-  
 
   render() {
+    let html = this.state.loading ? 
+      <div class="uk-container" >
+        <span  data-uk-spinner="ratio: 5" className="uk-position-center uk-text-center"></span>
+      </div>
+    : 
+      ProjectDashBoard.renderAll(this.state);
+
+    return (
+      <div>
+        {html}
+      </div>
+    );
+  }
+
+  static renderAll(state) {
     const url = window.location.href;
-    const project_name = this.state.loading ? 'YTPMD' : this.state.project;
-    const sprint_name = this.state.loading ? 'SPRINT' : this.state.sprint;
-    const sprint_start_date = this.state.loading ? "Loading..." : this.state.sprintstart;
-    const sprint_end_date = this.state.loading ? "Loading..." : this.state.sprintend;
+    const project_name = state.project;
+    const sprint_name = state.sprint;
+    const sprint_start_date = state.sprintstart;
+    const sprint_end_date = state.sprintend;
     const title = '"' + project_name + '" - "' + sprint_name + '" (' + sprint_start_date + ' - ' + sprint_end_date + ')';
     const project_employee = {
       'planning' : ['Jake', 'John', 'Ivan'],
@@ -236,11 +185,9 @@ export class ProjectDashBoard extends Component {
       </div>
     </div>;
 
-    let timeline = this.state.loading ? 
-      <p className="uk-text-uppercase uk-text-center">Loading...</p>
-    : 
-      ProjectDashBoard.renderTimeLine(this.state.timeline_data);
-
+    const timeline = 
+      <TimeLineChart graphName="timeline" graphData={state.timeline_data}/>;
+  
     return (
         <div className="uk-padding uk-grid-divider uk-child-width-expand@s" data-uk-grid>
           <div className="uk-width-3-4">
@@ -296,6 +243,6 @@ export class ProjectDashBoard extends Component {
             </div>
           </div>
         </div>  
-    );
+      );
   }
 }
