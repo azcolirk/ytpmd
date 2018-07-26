@@ -14,6 +14,7 @@ using YouTrackSharp.Projects;
 using YouTrackSharp.Issues;
 using YouTrackSharp.AgileBoards;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace ytpmd.Controllers
 { 
@@ -26,6 +27,11 @@ namespace ytpmd.Controllers
 		public YouTrackTestController(UserManager<ApplicationUser> userManager, IConfiguration configuration) {
 			_userManager = userManager;
 			_configuration = configuration;
+		}
+
+		private string GetUnixTimeString(DateTime dt)
+		{
+			return new DateTimeOffset(dt).ToUnixTimeSeconds().ToString();
 		}
 
 
@@ -77,7 +83,7 @@ namespace ytpmd.Controllers
 
             var issues_service = connection.CreateIssuesService();
             var issues = await issues_service.GetIssuesInProject("ba", "#{" + version_str + "} ", 0, 100);
-            
+          
 			var _issues_changes = new List<Task<(string, IEnumerable<Change>)>>();
 
 			foreach (var i in issues) {
@@ -126,15 +132,15 @@ namespace ytpmd.Controllers
                     last_state = new ResultList {
                         Id = i.Id,
                         Status = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).To.AsString()).First(),
-                        Start = ((Int32)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString()
+                        Start = GetUnixTimeString(datetime)
                     };
 
                     if (datetime < last_update[i.Id]) {
                         continue;
-                    } else if (Convert.ToInt32(last_state.Start) < (Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds) {
+                    } else if (Convert.ToInt32(last_state.Start) < Convert.ToInt32(GetUnixTimeString(last_update[i.Id]))) {
                         Console.WriteLine("     last state : " + last_state.Status);
-                        last_state.Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
-                        last_state.End = ((Int32)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
+                        last_state.Start = GetUnixTimeString(last_update[i.Id]);
+                        last_state.End = GetUnixTimeString(datetime);
                         res_list.Add(last_state);
                         last_state = null;
                     }
@@ -143,13 +149,13 @@ namespace ytpmd.Controllers
                         Id = i.Id,
                         Status = state,
                         Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString(),
-                        End = ((Int32)(datetime.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString(),
+                        End = GetUnixTimeString(datetime),
                     });
                     last_update[i.Id] = datetime;
                 }
                 if (last_state != null) {
-                    last_state.Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
-                    last_state.End = ((Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString();
+                    last_state.Start = GetUnixTimeString(last_update[i.Id]);
+                    last_state.End = GetUnixTimeString(DateTime.Now);
                     res_list.Add(last_state);
                     Console.WriteLine("     last state : " + last_state.Status);
                 }
@@ -160,7 +166,7 @@ namespace ytpmd.Controllers
                 Sprint = version_str,
                 SprintStart = version_start.ToString("dd.MM.yy"),
                 SprintEnd = version_end.ToString("dd.MM.yy"),
-                Project = "Разработка проекта BILL-admin"
+                Project = "Разработка проекта BILL-admin "
                 };
         }
 
