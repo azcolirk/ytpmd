@@ -28,6 +28,6 @@ export class TimeLineChart extends Component {
         const container = document.getElementById(_id);
         const chart = new GoogleCharts.api.visualization.Timeline(container);
         const data = GoogleCharts.api.visualization.arrayToDataTable(_data);
-        chart.draw(data, {height: 640});
+        chart.draw(data, {height: _data.length * 60});
     }
 }
