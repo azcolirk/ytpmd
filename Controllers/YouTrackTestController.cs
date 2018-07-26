@@ -53,6 +53,8 @@ namespace ytpmd.Controllers
         public async Task<ResultData> Dashboard()
         {
             const string version_str = "Sprint 4";
+            const string board_str = "Разработка проекта BILL-admin";
+
             YouTrackCredential credential;
             using (StreamReader r = new StreamReader("credential.json"))
             {
@@ -61,41 +63,53 @@ namespace ytpmd.Controllers
             var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
 
             // Поиск параметров спринта (время начала)
-            DateTime version_start = new DateTime();
-            DateTime version_end = new DateTime();
             var agilesettings = new AgileSettings();
             var boards_service = connection.CreateAgileBoardService();
             var boards = await boards_service.GetAgileBoards();
 
-			var _sprints = new List<Task<Sprint>>();
+            AgileSettings board = new AgileSettings();
             foreach (var b in boards) {
-                if (!b.Name.Equals("Разработка проекта BILL-admin"))
-                    continue;
-                //Console.WriteLine("b : " + b.Name);
-                foreach (var s in b.Sprints) {
-					_sprints.Add(boards_service.GetSprint(b.Id, s.Id));
+                if (b.Name.Equals(board_str)) {
+                    board = b;
+                    break;
                 }
+            }
+
+            if (board.Id.Length == 0)
+                throw new SystemException("board not found");
+
+            var _sprints = new List<Task<Sprint>>();
+            foreach (var s in board.Sprints) {
+				_sprints.Add(boards_service.GetSprint(board.Id, s.Id));
             }
 
 			var sprints = await Task.WhenAll(_sprints);
 
+            var sprint = new Sprint();
 			foreach (var s in sprints) {
 				if (s.Version.Equals(version_str)) {
-					version_start = new DateTime(s.Start.Value.DateTime.Year, s.Start.Value.DateTime.Month, s.Start.Value.DateTime.Day, 0, 0, 0);
-					version_end = new DateTime(s.Finish.Value.DateTime.Year, s.Finish.Value.DateTime.Month, s.Finish.Value.DateTime.Day, 0, 0, 0);
+                    sprint = s;
 				}
 			}
 
+            if (sprint.Id.Length == 0)
+                throw new SystemException("sprint not found");
+
+			var version_start = new DateTime(sprint.Start.Value.DateTime.Year, sprint.Start.Value.DateTime.Month, sprint.Start.Value.DateTime.Day, 0, 0, 0);
+			var version_end = new DateTime(sprint.Finish.Value.DateTime.Year, sprint.Finish.Value.DateTime.Month, sprint.Finish.Value.DateTime.Day, 23, 59, 59);
+
             var issues_service = connection.CreateIssuesService();
-            var ba_issues = await issues_service.GetIssuesInProject("ba", "#{" + version_str + "}", 0, 250);
-            var bc_issues = await issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend", 0, 250);
+            var ba_issues = await issues_service.GetIssuesInProject("ba", "#{" + version_str + "} и Подсистема: -Тестирование и -Docs и Подзадача: -ba-842 и Тип: -{Пользовательская история} )", 0, 250);
+            var bc_issues = await issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend и -Docs )", 0, 250);
             var issues = ba_issues.Concat(bc_issues);
 
 			var _issues_changes = new List<Task<(string, IEnumerable<Change>)>>();
 
 			foreach (var i in issues) {
 				_issues_changes.Add(Task<(string, IEnumerable<Change>)>
-					.Run(async () => {return (i.Id, await issues_service.GetChangeHistoryForIssue(i.Id));}));
+					.Run(async () => {
+                        return (i.Id, await issues_service.GetChangeHistoryForIssue(i.Id));
+                    }));
 			}
 
 			var issues_changes = (await Task.WhenAll(_issues_changes)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
@@ -106,6 +120,19 @@ namespace ytpmd.Controllers
             foreach (var i in issues) {
                 Console.WriteLine("t : " + i.Id);
                 ResultList last_state = null;
+                bool in_sprint = false; // Спринт
+                var _fields = i.Fields;
+                foreach(var f in _fields) {
+                    if (f.Name.Equals("Спринт")) {
+                        foreach(var v in f.AsCollection()) {
+                            if (v == version_str) {
+                                in_sprint = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 foreach (var c in issues_changes[i.Id] ) {
                     String state_name = "";
                     foreach (var f in c.Fields) {
@@ -114,10 +141,14 @@ namespace ytpmd.Controllers
                                 var r = JsonConvert.DeserializeObject<List<String>>(cf);
                                 if (r.Capacity == 0)
                                     continue;
+                                in_sprint = r.First() == version_str;
                                 Console.WriteLine("     r : " + r.First() + " cmp :" + (r.First() == version_str));
                                 if (r.First().Equals(version_str) && !last_update.ContainsKey(i.Id)) {
+                                    Console.WriteLine(c.ForField("updated").To.AsDateTime());
                                     if (version_start < c.ForField("updated").To.AsDateTime())
-                                    last_update.Add(i.Id, c.ForField("updated").To.AsDateTime());
+                                        last_update.Add(i.Id, c.ForField("updated").To.AsDateTime());
+                                    else
+                                        last_update.Add(i.Id, version_start);
                                 }
                             }
                         }
@@ -133,7 +164,7 @@ namespace ytpmd.Controllers
                     var datetime = c.ForField("updated").To.AsDateTime();
                     if (!last_update.ContainsKey(i.Id)) {
                         //last_update.Add(i.Id, new DateTime(1970, 1, 1, 0, 0, 0));
-                        last_update.Add(i.Id, new DateTime(version_start.Year, version_start.Month, version_start.Day, 0, 0, 0));
+                        last_update.Add(i.Id, version_start);
                     }
 
                     last_state = new ResultList {
@@ -155,7 +186,7 @@ namespace ytpmd.Controllers
                     res_list.Add( new ResultList {
                         Id = i.Id,
                         Status = state,
-                        Start = ((Int32)(last_update[i.Id].Subtract(new DateTime(1970, 1, 1))).TotalSeconds).ToString(),
+                        Start = GetUnixTimeString(last_update[i.Id]),
                         End = GetUnixTimeString(datetime),
                     });
                     last_update[i.Id] = datetime;
@@ -165,6 +196,25 @@ namespace ytpmd.Controllers
                     last_state.End = GetUnixTimeString(DateTime.Now);
                     res_list.Add(last_state);
                     Console.WriteLine("     last state : " + last_state.Status);
+                } else if (in_sprint) {
+                    var fields = i.Fields;
+                    string status = "";
+                    foreach(var f in fields) {
+                        if (f.Name.Equals("State") || f.Name.Equals("Статус")) {
+                            Console.WriteLine("     s : " + f.Value.ToString());
+                            status = f.AsString();
+                            break;
+                        }
+                    }
+                    if (status != "") {
+                        last_state = new ResultList {
+                            Id = i.Id,
+                            Status = status,
+                            Start = GetUnixTimeString(version_start),
+                            End = GetUnixTimeString(DateTime.Now)
+                        };
+                        res_list.Add(last_state);
+                    }
                 }
             }
             
@@ -173,8 +223,8 @@ namespace ytpmd.Controllers
                 Sprint = version_str,
                 SprintStart = version_start.ToString("dd.MM.yy"),
                 SprintEnd = version_end.ToString("dd.MM.yy"),
-                Project = "Разработка проекта BILL-admin "
-                };
+                Project = board.Name
+            };
         }
 
         public class ResultData {

@@ -72,12 +72,10 @@ export class ProjectDashBoard extends Component {
 
         console.log(map);
 
-
-
         map.forEach((value, key, map) => {
           console.log(key);
           console.log(value);
-          if (value.length > 1 || value[0].status !== "Готово") {
+          if (value.length > 1 || value[0].status !== "Готово" || true) {
             value.forEach(function(e) {
               new_data.push(
                 [
