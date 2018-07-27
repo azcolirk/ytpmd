@@ -48,6 +48,7 @@ export class ProjectDashBoard extends Component {
         development: 0,
         testing: 0,
       },
+      task_status: new Array(),
       loading: true };
 
     fetch('api/YouTrackTest/Dashboard')
@@ -58,10 +59,23 @@ export class ProjectDashBoard extends Component {
       .then(data => {
         var new_data = ProjectDashBoard.raw_timeline_data;
         var map = new Map();
+        var time_map = new Map();
         data.listdata.forEach(function(e) {
           if (map.has(e.id) === false) {
             console.log("new array for " + e.id);
             map.set(e.id, []);
+            time_map.set(e.id, {
+              status: e.status, 
+              start: new Date(parseInt(e.start) * 1000), 
+              end: new Date(parseInt(e.end) * 1000)
+            });
+          }
+          if (time_map.get(e.id).start > new Date(parseInt(e.start) * 1000)) {
+            time_map.get(e.id).start = new Date(parseInt(e.start) * 1000);
+          }
+          if (time_map.get(e.id).end < new Date(parseInt(e.end) * 1000)) {
+            time_map.get(e.id).status = e.status;
+            time_map.get(e.id).end = new Date(parseInt(e.end) * 1000);
           }
           map.get(e.id).push({
             status: e.status, 
@@ -71,6 +85,38 @@ export class ProjectDashBoard extends Component {
         });
 
         console.log(map);
+        console.log(time_map);
+
+        var local_project_tasks = {
+          on_sprint_start: 0,
+          added_during_sprint: 0,
+          removed_during_sprint: 0,
+        };
+        var local_task_status = new Array();
+        console.log(data.sprintstart);
+        time_map.forEach((value, key, map) => {
+          var task_start = new Date(value.start);
+          task_start.setHours(0, 0, 0, 0);
+          var sprint_start = new Date(parseInt(data.sprintstart) * 1000);
+          sprint_start.setHours(0, 0, 0, 0);
+          console.log(task_start + " <> " + sprint_start);
+          if (task_start > sprint_start) {
+            local_project_tasks.added_during_sprint++;
+          } else {
+            local_project_tasks.on_sprint_start++;
+          }
+          if (value.status in local_task_status)
+            local_task_status[value.status] = local_task_status[value.status] + 1;
+          else
+          local_task_status[value.status] = 1;
+          // if (local_task_status.has(value.status) === false) {
+          //   local_task_status.set(value.status, 0);
+          // }
+          // local_task_status.set(value.status, local_task_status.get(value.status) + 1);
+        });
+
+        console.log('local_task_status');
+        console.log(local_task_status);
 
         map.forEach((value, key, map) => {
           console.log(key);
@@ -94,10 +140,12 @@ export class ProjectDashBoard extends Component {
         this.setState({ 
           timeline_data: new_data,
           sprint: data.sprint,
-          sprintstart: data.sprintstart,
-          sprintend: data.sprintend,
+          sprintstart: (new Date(parseInt(data.sprintstart) * 1000)).toLocaleDateString("ru-RU"),
+          sprintend: (new Date(parseInt(data.sprintend) * 1000)).toLocaleDateString("ru-RU"),
           project: data.project,
-          loading: false 
+          loading: false,
+          project_tasks: local_project_tasks,
+          task_status: local_task_status,
         });
       });
   }
@@ -143,6 +191,18 @@ export class ProjectDashBoard extends Component {
       return <li key={id}>{name}</li>;
     });
 
+    const status_list = state.task_status.map(function(value, id) {
+      console.log('here: ' + value);
+      return <div className="uk-clearfix" data-uk-leader="fill: _">
+              <div className="uk-float-left">
+                <div className="uk-panel" >{id}</div>
+              </div>
+              <div className="uk-float-right">
+                <div className="uk-panel">{value}</div>
+              </div>
+            </div>;
+    });
+
     const project_tasks_total =
     <div className="uk-text-meta">
       <div className="uk-clearfix" data-uk-leader="fill: _">
@@ -181,7 +241,8 @@ export class ProjectDashBoard extends Component {
 
     const project_time_total = 
     <div className="uk-text-meta">
-      <div className="uk-clearfix" data-uk-leader="fill: _">
+      {status_list}
+      {/* <div className="uk-clearfix" data-uk-leader="fill: _">
         <div className="uk-float-left">
           <div className="uk-panel" >Время планирования:</div>
         </div>
@@ -212,7 +273,7 @@ export class ProjectDashBoard extends Component {
         <div className="uk-float-right">
           <div className="uk-panel">{time_to_str(state.project_time.testing)}</div>
         </div>
-      </div>
+      </div> */}
     </div>;
     const colors = ['#e30000','#fed74a','#7dbd36', '#ff7bc3', '#92e1d5', '#42a3df', '#246512'];
     return (
@@ -234,8 +295,8 @@ export class ProjectDashBoard extends Component {
           </div>
           <div>
             <div className="uk-section uk-padding-remove-vertical">
-              <h3>Участники спринта</h3>
-              <div className="uk-section uk-padding-remove-vertical">
+              {/* <h3>Участники спринта</h3> */}
+              {/* <div className="uk-section uk-padding-remove-vertical">
                 <h4>Планирование</h4>
                 <div>
                   <ul className="uk-list">
@@ -266,7 +327,7 @@ export class ProjectDashBoard extends Component {
                     {employee_testing}
                   </ul>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>  

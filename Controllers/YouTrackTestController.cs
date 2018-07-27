@@ -221,8 +221,8 @@ namespace ytpmd.Controllers
             return new ResultData {
                 ListData = res_list,
                 Sprint = version_str,
-                SprintStart = version_start.ToString("dd.MM.yy"),
-                SprintEnd = version_end.ToString("dd.MM.yy"),
+                SprintStart = GetUnixTimeString(version_start),
+                SprintEnd = GetUnixTimeString(version_end),
                 Project = board.Name
             };
         }
