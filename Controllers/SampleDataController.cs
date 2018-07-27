@@ -20,11 +20,121 @@ namespace ytpmd.Controllers
     [Route("")]
     public class QueryController : Controller
     {
+        [Route("api/sprint/tasks")]
+        [HttpGet]
+        public TaskSumm GetTasks() {
+            const string version_str = "Sprint 4";
+            YouTrackCredential credential;
+            using (StreamReader r = new StreamReader("credential.json"))
+            {
+                credential = JsonConvert.DeserializeObject<YouTrackCredential>(r.ReadToEnd());
+            }
+            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
+
+            DateTime version_start = new DateTime();
+            DateTime version_end = new DateTime();
+            var boards_service = connection.CreateAgileBoardService();
+            var boards = boards_service.GetAgileBoards().GetAwaiter().GetResult();
+            foreach (var b in boards) {
+                if (!b.Name.Equals("Разработка проекта BILL-admin"))
+                    continue;
+                foreach (var s in b.Sprints) {
+                    var ss = boards_service.GetSprint(b.Id, s.Id).GetAwaiter().GetResult();
+                    if (ss.Version.Equals(version_str)) {
+                        version_start = new DateTime(ss.Start.Value.DateTime.Year, ss.Start.Value.DateTime.Month, ss.Start.Value.DateTime.Day, 0, 0, 0);
+                        version_end = new DateTime(ss.Finish.Value.DateTime.Year, ss.Finish.Value.DateTime.Month, ss.Finish.Value.DateTime.Day, 0, 0, 0);
+                    }
+                }
+
+            }
+
+            int deleted_tasks = 1;
+            int added_tasks = 2;
+            int onstart_tasks = 3;
+            var first_day = version_start; first_day.AddDays(1);
+            var issues_service = connection.CreateIssuesService();
+            var issuse_project = issues_service.GetIssuesInProject("ba", " #me", 0, 1000);
+            //var ba_issues = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} и Подсистема: -Тестирование и -Docs и Подзадача: -ba-842 и Тип: -{Пользовательская история} )", 0, 250).GetAwaiter().GetResult();
+            //var bc_issues = issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend и -Docs )", 0, 250).GetAwaiter().GetResult();
+            var ba_issues = issues_service.GetIssuesInProject("ba", "Подсистема: -Тестирование и -Docs и Подзадача: -ba-842 и Тип: -{Пользовательская история} )", 0, 1500).GetAwaiter().GetResult();
+            var bc_issues = issues_service.GetIssuesInProject("bc", "и Подсистема: Backend и -Docs )", 0, 1000).GetAwaiter().GetResult();
+            //var issues = issuse_project.GetAwaiter().GetResult();
+            var issues = ba_issues.Concat(bc_issues);
+            int all = 1;
+            foreach (var i in issues) {
+                Console.WriteLine("t : " + i.Id);
+                var issues_changes = issues_service.GetChangeHistoryForIssue(i.Id);
+                bool chanched = false;
+                foreach (var c in issues_changes.GetAwaiter().GetResult()) {
+                    var c_date = c.ForField("updated").To.AsDateTime();
+                    //if (version_start >= c_date)
+                    //    continue;
+                    if (version_end < c_date)
+                        continue;
+                    foreach (var f in c.Fields) {
+                        if (f.Name.Equals("Спринт")) {
+                            bool added = HasVer(version_str, true, f);
+                            bool deleted = HasVer(version_str, false, f);
+                            if (added || deleted)
+                                all++;
+                            if (c_date < first_day) {
+                                Console.WriteLine("     s : onstart?");
+                                if(added) {
+                                    Console.WriteLine("         s : onstart+");
+                                    onstart_tasks++;
+                                }
+                                if(deleted) {
+                                    Console.WriteLine("         s : onstart-");
+                                    onstart_tasks--;
+                                }
+                            } else if ((added || deleted) && !(added && deleted)) {
+                                Console.WriteLine("     s : after");
+                                if(added)
+                                    added_tasks++;
+                                if(deleted)
+                                    deleted_tasks++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var s_ba_issues = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} и Подсистема: -Тестирование и -Docs и Подзадача: -ba-842 и Тип: -{Пользовательская история} )", 0, 1500).GetAwaiter().GetResult();
+            var s_bc_issues = issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend и -Docs )", 0, 1000).GetAwaiter().GetResult();
+            onstart_tasks = s_ba_issues.Count + s_bc_issues.Count - added_tasks + deleted_tasks;
+
+            return new TaskSumm {
+                add = added_tasks,
+                del = deleted_tasks,
+                onstart = onstart_tasks
+            };
+        }
+
+        bool HasVer(string version, bool to, FieldChange f) {
+            var cf = to ? f.To.AsCollection() : f.From.AsCollection();
+            foreach (var c in cf) {
+                var r = JsonConvert.DeserializeObject<List<String>>(c);
+                    if (r.Capacity == 0)
+                        continue;
+                    if (r.First().Equals(version))
+                        return true;
+            }
+            return false;
+        }
+
+        public class TaskSumm {
+            [JsonProperty("add")]
+            public int add { get; set; }
+            [JsonProperty("del")]
+            public int del { get; set; }
+            [JsonProperty("onstart")]
+            public int onstart { get; set; }
+        }
+
         [Route("api/sprint/summary")]
         [HttpGet]
         //public IEnumerable<WeatherForecast> WeatherForecasts()
-        public ResultData Get()
-        {
+        public ResultData Get() {
             const string version_str = "Sprint 4";
             YouTrackCredential credential;
             using (StreamReader r = new StreamReader("credential.json"))
@@ -33,9 +143,12 @@ namespace ytpmd.Controllers
             }
             var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
             var issues_service = connection.CreateIssuesService();
-            var ba_issues = issues_service.GetIssuesInProject("ba", "#{" + version_str + "}", 0, 250).GetAwaiter().GetResult();
-            var issues = issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend", 0, 250).GetAwaiter().GetResult();
+            //var ba_issues = issues_service.GetIssuesInProject("ba", "#{" + version_str + "}", 0, 250).GetAwaiter().GetResult();
+            //var issues = issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend", 0, 250).GetAwaiter().GetResult();
 
+            var issuse_project = issues_service.GetIssuesInProject("ba", "#{" + version_str + "} #me", 0, 100);
+            var issues = issuse_project.GetAwaiter().GetResult();
+            
             // Поиск параметров спринта (время начала)
             DateTime version_start = new DateTime();
             DateTime version_end = new DateTime();
