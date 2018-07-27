@@ -92,8 +92,7 @@ export class ProjectDashBoard extends Component {
           added_during_sprint: 0,
           removed_during_sprint: 0,
         };
-        var local_task_status = new Array();
-        console.log(data.sprintstart);
+        var local_task_status = new Array(10);
         time_map.forEach((value, key, map) => {
           var task_start = new Date(value.start);
           task_start.setHours(0, 0, 0, 0);
@@ -191,14 +190,22 @@ export class ProjectDashBoard extends Component {
       return <li key={id}>{name}</li>;
     });
 
-    const status_list = state.task_status.map(function(value, id) {
-      console.log('here: ' + value);
+    var task_status_array = [
+      {k: 'Аннулирована', v: state.task_status['Аннулирована']},
+      {k: 'Открыта', v: state.task_status['Открыта']},
+      {k: 'В обработке', v: state.task_status['В обработке']},
+      {k: 'Подлежит проверке', v: state.task_status['Подлежит проверке']},
+      {k: 'В тестировании', v: state.task_status['В тестировании']},
+      {k: 'Готово к мержу', v: state.task_status['Готово к мержу']},
+      {k: 'Готово', v: state.task_status['Готово']},
+    ];
+    const status_list = task_status_array.map(function(value, id) {
       return <div className="uk-clearfix" data-uk-leader="fill: _">
               <div className="uk-float-left">
-                <div className="uk-panel" >{id}</div>
+                <div className="uk-panel" >{value.k}</div>
               </div>
               <div className="uk-float-right">
-                <div className="uk-panel">{value}</div>
+                <div className="uk-panel">{value.v}</div>
               </div>
             </div>;
     });
