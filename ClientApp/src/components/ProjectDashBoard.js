@@ -147,6 +147,21 @@ export class ProjectDashBoard extends Component {
           task_status: local_task_status,
         });
       });
+
+    fetch('api/sprint/tasks')
+      .then((response) => {
+        console.log(response);
+        return response.json();
+      })
+      .then(data => {
+        this.setState({ 
+          project_tasks:{
+            on_sprint_start: data.onstart,
+            added_during_sprint: data.add,
+            removed_during_sprint: data.del,
+          }
+        });
+      });
   }
 
   render() {
