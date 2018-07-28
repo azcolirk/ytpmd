@@ -13,6 +13,7 @@ using YouTrackSharp;
 using YouTrackSharp.Projects;
 using YouTrackSharp.Issues;
 using YouTrackSharp.AgileBoards;
+using YouTrackSharp.TimeTracking;
 using Newtonsoft.Json;
 using System.IO;
 
@@ -113,13 +114,14 @@ namespace ytpmd.Controllers
 			}
 
 			var issues_changes = (await Task.WhenAll(_issues_changes)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
-
             
-            var res_list = new List<ResultList>();
+            var res_list = new List<IssueStateItem>();
             var last_update = new Dictionary<String, DateTime>();
+            var sprint_issues = new List<string>();
+
             foreach (var i in issues) {
                 Console.WriteLine("t : " + i.Id);
-                ResultList last_state = null;
+                IssueStateItem last_state = null;
                 bool in_sprint = false; // Спринт
                 var _fields = i.Fields;
                 foreach(var f in _fields) {
@@ -170,7 +172,7 @@ namespace ytpmd.Controllers
                         last_update.Add(i.Id, version_start);
                     }
 
-                    last_state = new ResultList {
+                    last_state = new IssueStateItem {
                         Id = i.Id,
                         Status = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).To.AsString()).First(),
                         Start = GetUnixTimeString(datetime)
@@ -186,7 +188,7 @@ namespace ytpmd.Controllers
                         last_state = null;
                     }
 
-                    res_list.Add( new ResultList {
+                    res_list.Add( new IssueStateItem {
                         Id = i.Id,
                         Status = state,
                         Start = GetUnixTimeString(last_update[i.Id]),
@@ -195,6 +197,11 @@ namespace ytpmd.Controllers
                     last_update[i.Id] = datetime;
                 }
                 Console.WriteLine("id: " + i.Id + " 1 - " + in_sprint);
+                if (last_state != null || in_sprint) {
+                    if (sprint_issues.IndexOf(i.Id) == -1) {
+                        sprint_issues.Add(i.Id);
+                    }
+                }
                 if (last_state != null) {
                     Console.WriteLine("id: " + i.Id + " 2");
                     last_state.Start = GetUnixTimeString(last_update[i.Id]);
@@ -214,19 +221,77 @@ namespace ytpmd.Controllers
                         }
                     }
                     if (status != "") {
-                        last_state = new ResultList {
+                        var state = new IssueStateItem {
                             Id = i.Id,
                             Status = status,
                             Start = GetUnixTimeString(version_start),
                             End = GetUnixTimeString(DateTime.Now)
                         };
-                        res_list.Add(last_state);
+                        res_list.Add(state);
                     }
                 }
             }
+
+            var _work_items = new List<Task<(string, IEnumerable<WorkItem>)>>();
+            var time_tracking_service = connection.CreateTimeTrackingService();
+            foreach(var i in sprint_issues) {
+                _work_items.Add(Task<IEnumerable<WorkItem>>
+                    .Run(async () => {
+                        return (i, await time_tracking_service.GetWorkItemsForIssue(i));
+                    })
+                );
+            }
+
+            var work_items = (await Task.WhenAll(_work_items)).ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
+            var work_item_list = new Dictionary<string, List<WorkItem>>();
+            foreach (var work in work_items)
+            {
+                if (!work_item_list.ContainsKey(work.Key)) {
+                    work_item_list.Add(work.Key, new List<WorkItem>());
+                }
+                work_item_list[work.Key].AddRange(work.Value);
+            }
+            Console.WriteLine(work_item_list);
+            var work_list = new List<IssueWorkItem>();
+            foreach(var item_works in work_item_list) {
+                foreach(var item in item_works.Value) {
+                    if (item.Date.HasValue && item.Date.Value >= version_start && item.Date.Value <= version_end) {
+                        var work = new IssueWorkItem();
+                        work.Id = item_works.Key;
+                        work.Date = GetUnixTimeString(item.Date.Value);
+                        work.Duration = item.Duration.TotalMinutes.ToString();
+                        Console.WriteLine(item_works.Key);
+                        Console.WriteLine(item.Date);
+                        Console.WriteLine(item.Duration);
+                        Console.WriteLine(item.Description);
+                        Console.WriteLine(item.Author.Login);
+                        Console.WriteLine(item.WorkType);
+                        if (item.WorkType != null) {
+                            work.WorkType = item.WorkType.Name;
+                        }
+                        work.Description = item.Description;
+                        work.Author = item.Author.Login;
+                        work_list.Add(work);
+                    }
+                }
+            }
+
+            /*
+                        public string Date { get; set; }
+            public string Duration { get; set; }
+            public string WorkType { get; set; }
+            public string Description { get; set; }
+            public string Author { get; set; }
+
+                        public string Date { get; set; }
+            public string Duration { get; set; }
+            public string WorkType { get; set; }
+            public string Description { get; set; }
+            public string Author { get; set; } */
             
             return new ResultData {
                 ListData = res_list,
+                WorkData = work_list,
                 Sprint = version_str,
                 SprintStart = GetUnixTimeString(version_start),
                 SprintEnd = GetUnixTimeString(version_end),
@@ -244,15 +309,26 @@ namespace ytpmd.Controllers
             [JsonProperty("project")]
             public string Project { get; set; }
             [JsonProperty("listdata")]
-            public List<ResultList> ListData;
+            public List<IssueStateItem> ListData;
+            [JsonProperty("workdata")]
+            public List<IssueWorkItem> WorkData;
 
         }
 
-        public class ResultList {
+        public class IssueStateItem {
             public string Id { get; set; }
             public string Status { get; set; }
             public string Start { get; set; }
             public string End { get; set; }
+        }
+
+        public class IssueWorkItem {
+            public string Id { get; set; }
+            public string Date { get; set; }
+            public string Duration { get; set; }
+            public string WorkType { get; set; }
+            public string Description { get; set; }
+            public string Author { get; set; }
         }
     }
 }
