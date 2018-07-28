@@ -33,6 +33,7 @@ export class ProjectDashBoard extends Component {
   constructor(props) {
     super(props);
     this.state = { timeline_data: [],
+      work_data: [],
       sprint: "",
       sprintstart: "",
       sprintend: "",
@@ -98,8 +99,6 @@ export class ProjectDashBoard extends Component {
         local_task_status['Готово к мержу'] = 0;
         local_task_status['Готово'] = 0;
 
-
-
         map.forEach((value, key, map) => {
           if (value.length > 1 || value[0].status !== "Готово") {
             value.forEach(function(e) {
@@ -132,6 +131,7 @@ export class ProjectDashBoard extends Component {
 
         this.setState({ 
           timeline_data: new_data,
+          work_data: data.workdata,
           sprint: data.sprint,
           sprintstart: (new Date(parseInt(data.sprintstart) * 1000)).toLocaleDateString("ru-RU"),
           sprintend: (new Date(parseInt(data.sprintend) * 1000)).toLocaleDateString("ru-RU"),
@@ -255,7 +255,33 @@ export class ProjectDashBoard extends Component {
       </div>
     </div>;
 
-    const project_time_total = 
+    var total_work_map = new Map();
+    // console.log(state.work_data);
+    state.work_data.forEach(function(e) {
+      // console.log(e.workType);
+      // console.log(e.duration);
+      const work_type = e.workType ? e.workType : " -- not set -- ";
+      if (total_work_map.has(work_type) === false) {
+        total_work_map.set(work_type, 0);
+      }
+      total_work_map.set(work_type, total_work_map.get(work_type) + parseInt(e.duration));
+    });
+    // console.log(total_work_map);
+    var total_working_array = Array.from(total_work_map);
+    // console.log(total_working_array);
+    
+    const project_time_total = total_working_array.map(function(value, id){
+      return <div className="uk-clearfix" data-uk-leader="fill: _" key={id}>
+          <div className="uk-float-left">
+            <div className="uk-panel" >{value[0]}</div>
+          </div>
+          <div className="uk-float-right">
+            <div className="uk-panel">{time_to_str(value[1])}</div>
+          </div>
+        </div>;
+    });
+
+    const project_status_list = 
     <div className="uk-text-meta">
       {status_list}
     </div>;
@@ -268,8 +294,13 @@ export class ProjectDashBoard extends Component {
               <div className="uk-float-left uk-width-1-5">
                   <div className="uk-panel">{project_tasks_total}</div>
               </div>
-              <div className="uk-float-right uk-width-1-5">
-                  <div className="uk-panel">{project_time_total}</div>
+              <div className="uk-float-left  uk-width-1-5 uk-padding-small uk-padding-remove-vertical">
+                  <div className="uk-panel">{project_status_list}</div>
+              </div>
+              <div className="uk-float-left  uk-width-1-5">
+                <div className="uk-panel">
+                  <div className="uk-text-meta">{project_time_total}</div>
+                </div>
               </div>
             </div>
             <hr className="uk-divider-icon"/>
