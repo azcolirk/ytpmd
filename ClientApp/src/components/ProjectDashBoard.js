@@ -56,6 +56,7 @@ export class ProjectDashBoard extends Component {
         return response.json();
       })
       .then(data => {
+        console.log(data);
         var new_data = ProjectDashBoard.raw_timeline_data;
         var map = new Map();
         var time_map = new Map();
