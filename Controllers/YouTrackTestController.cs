@@ -125,6 +125,7 @@ namespace ytpmd.Controllers
                 foreach(var f in _fields) {
                     if (f.Name.Equals("Спринт")) {
                         foreach(var v in f.AsCollection()) {
+                            Console.WriteLine(v + " <> " + version_str);
                             if (v == version_str) {
                                 in_sprint = true;
                                 break;
@@ -141,9 +142,10 @@ namespace ytpmd.Controllers
                                 var r = JsonConvert.DeserializeObject<List<String>>(cf);
                                 if (r.Capacity == 0)
                                     continue;
-                                in_sprint = r.First() == version_str;
+                                
                                 Console.WriteLine("     r : " + r.First() + " cmp :" + (r.First() == version_str));
                                 if (r.First().Equals(version_str) && !last_update.ContainsKey(i.Id)) {
+                                    in_sprint = true;
                                     Console.WriteLine(c.ForField("updated").To.AsDateTime());
                                     if (version_start < c.ForField("updated").To.AsDateTime())
                                         last_update.Add(i.Id, c.ForField("updated").To.AsDateTime());
@@ -158,6 +160,7 @@ namespace ytpmd.Controllers
                             break;
                         }
                     }
+                    Console.WriteLine("state_name: " + state_name);
                     if (state_name.Length == 0)
                         continue;
                     string state = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).From.AsString()).First();
@@ -191,12 +194,16 @@ namespace ytpmd.Controllers
                     });
                     last_update[i.Id] = datetime;
                 }
+                Console.WriteLine("id: " + i.Id + " 1 - " + in_sprint);
                 if (last_state != null) {
+                    Console.WriteLine("id: " + i.Id + " 2");
                     last_state.Start = GetUnixTimeString(last_update[i.Id]);
                     last_state.End = GetUnixTimeString(DateTime.Now);
                     res_list.Add(last_state);
                     Console.WriteLine("     last state : " + last_state.Status);
                 } else if (in_sprint) {
+                    Console.WriteLine("id: " + i.Id + " 3");
+                    Console.WriteLine("last_state is null, get currenct state");
                     var fields = i.Fields;
                     string status = "";
                     foreach(var f in fields) {

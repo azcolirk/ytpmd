@@ -53,7 +53,6 @@ export class ProjectDashBoard extends Component {
 
     fetch('api/YouTrackTest/Dashboard')
       .then((response) => {
-        console.log(response);
         return response.json();
       })
       .then(data => {
@@ -62,7 +61,6 @@ export class ProjectDashBoard extends Component {
         var time_map = new Map();
         data.listdata.forEach(function(e) {
           if (map.has(e.id) === false) {
-            console.log("new array for " + e.id);
             map.set(e.id, []);
             time_map.set(e.id, {
               status: e.status, 
@@ -84,43 +82,25 @@ export class ProjectDashBoard extends Component {
           });
         });
 
-        console.log(map);
-        console.log(time_map);
-
         var local_project_tasks = {
           on_sprint_start: 0,
           added_during_sprint: 0,
           removed_during_sprint: 0,
         };
-        var local_task_status = new Array(10);
-        time_map.forEach((value, key, map) => {
-          var task_start = new Date(value.start);
-          task_start.setHours(0, 0, 0, 0);
-          var sprint_start = new Date(parseInt(data.sprintstart) * 1000);
-          sprint_start.setHours(0, 0, 0, 0);
-          console.log(task_start + " <> " + sprint_start);
-          if (task_start > sprint_start) {
-            local_project_tasks.added_during_sprint++;
-          } else {
-            local_project_tasks.on_sprint_start++;
-          }
-          if (value.status in local_task_status)
-            local_task_status[value.status] = local_task_status[value.status] + 1;
-          else
-          local_task_status[value.status] = 1;
-          // if (local_task_status.has(value.status) === false) {
-          //   local_task_status.set(value.status, 0);
-          // }
-          // local_task_status.set(value.status, local_task_status.get(value.status) + 1);
-        });
 
-        console.log('local_task_status');
-        console.log(local_task_status);
+        var local_task_status = new Array(0);
+        local_task_status['Аннулирована'] = 0;
+        local_task_status['Открыта'] = 0;
+        local_task_status['В обработке'] = 0;
+        local_task_status['Подлежит проверке'] = 0;
+        local_task_status['В тестировании'] = 0;
+        local_task_status['Готово к мержу'] = 0;
+        local_task_status['Готово'] = 0;
+
+
 
         map.forEach((value, key, map) => {
-          console.log(key);
-          console.log(value);
-          if (value.length > 1 || value[0].status !== "Готово" || true) {
+          if (value.length > 1 || value[0].status !== "Готово") {
             value.forEach(function(e) {
               new_data.push(
                 [
@@ -131,10 +111,23 @@ export class ProjectDashBoard extends Component {
                 ]
               );
             });
+          } else {
+            time_map.delete(key);
           }
         });
 
-        console.log(new_data);
+        time_map.forEach((value, key, map) => {
+          var task_start = new Date(value.start);
+          task_start.setHours(0, 0, 0, 0);
+          var sprint_start = new Date(parseInt(data.sprintstart) * 1000);
+          sprint_start.setHours(0, 0, 0, 0);
+          if (task_start > sprint_start) {
+            local_project_tasks.added_during_sprint++;
+          } else {
+            local_project_tasks.on_sprint_start++;
+          }
+          local_task_status[value.status] = local_task_status[value.status] + 1;
+        });
 
         this.setState({ 
           timeline_data: new_data,
@@ -148,20 +141,20 @@ export class ProjectDashBoard extends Component {
         });
       });
 
-    fetch('api/sprint/tasks')
-      .then((response) => {
-        console.log(response);
-        return response.json();
-      })
-      .then(data => {
-        this.setState({ 
-          project_tasks:{
-            on_sprint_start: data.onstart,
-            added_during_sprint: data.add,
-            removed_during_sprint: data.del,
-          }
-        });
-      });
+    // fetch('api/sprint/tasks')
+    //   .then((response) => {
+    //     console.log(response);
+    //     return response.json();
+    //   })
+    //   .then(data => {
+    //     this.setState({ 
+    //       project_tasks:{
+    //         on_sprint_start: data.onstart,
+    //         added_during_sprint: data.add,
+    //         removed_during_sprint: data.del,
+    //       }
+    //     });
+    //   });
   }
 
   render() {
@@ -215,7 +208,7 @@ export class ProjectDashBoard extends Component {
       {k: 'Готово', v: state.task_status['Готово']},
     ];
     const status_list = task_status_array.map(function(value, id) {
-      return <div className="uk-clearfix" data-uk-leader="fill: _">
+      return <div className="uk-clearfix" data-uk-leader="fill: _" key={id}>
               <div className="uk-float-left">
                 <div className="uk-panel" >{value.k}</div>
               </div>
@@ -264,38 +257,6 @@ export class ProjectDashBoard extends Component {
     const project_time_total = 
     <div className="uk-text-meta">
       {status_list}
-      {/* <div className="uk-clearfix" data-uk-leader="fill: _">
-        <div className="uk-float-left">
-          <div className="uk-panel" >Время планирования:</div>
-        </div>
-        <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(state.project_time.planning)}</div>
-        </div>
-      </div>
-      <div className="uk-clearfix" data-uk-leader="fill: _">
-        <div className="uk-float-left">
-          <div className="uk-panel" >Время проектирования:</div>
-        </div>
-        <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(state.project_time.project)}</div>
-        </div>
-      </div>
-      <div className="uk-clearfix" data-uk-leader="fill: _">
-        <div className="uk-float-left">
-          <div className="uk-panel" >Время разработки:</div>
-        </div>
-        <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(state.project_time.development)}</div>
-        </div>
-      </div>
-      <div className="uk-clearfix" data-uk-leader="fill: _">
-        <div className="uk-float-left">
-          <div className="uk-panel" >Время тестирования:</div>
-        </div>
-        <div className="uk-float-right">
-          <div className="uk-panel">{time_to_str(state.project_time.testing)}</div>
-        </div>
-      </div> */}
     </div>;
     const colors = ['#e30000','#fed74a','#7dbd36', '#ff7bc3', '#92e1d5', '#42a3df', '#246512'];
     return (
