@@ -3,12 +3,35 @@ import React, { Component } from 'react';
 export class Home extends Component {
   displayName = Home.name
 
-  make_list(objs, obj_type) {
+  constructor(props) {
+    super(props);
+    this.state = { 
+      projects: [],
+      boards: [],
+      loading: true 
+    };
+
+    fetch('api/YouTrackTest/Boards')
+      .then((response) => {
+        return response.json();
+      })
+      .then(data => {
+        console.log(data);
+
+        this.setState({ 
+          projects: data.projects,
+          boards: data.boards,
+          loading: false,
+        });
+      });
+    }
+
+  static make_list(objs, obj_type) {
     return objs.map(function(_obj, id) {
       const sprints = _obj.sprint.slice(0, 3).map(function(obj, id) {
         return <div key={id}>
-          <h5 className="uk-margin-remove-bottom"><a href={"/projectdashboard?" + obj_type + "=" + _obj.name + "&sprint=" + obj.name} className="uk-button uk-button-link">{obj.name}</a></h5>
-          <p className="uk-text-meta uk-margin-remove-top">задач: {obj.task_count}, {obj.start}-{obj.end}</p>
+          <h5 className="uk-margin-remove-bottom"><a href={"/projectdashboard/" + _obj.name + "/" + obj.name} className="uk-button uk-button-link">{obj.name}</a></h5>
+          <p className="uk-text-meta uk-margin-remove-top">задач: {obj.task_count}, {(new Date(parseInt(obj.start) * 1000)).toLocaleDateString("ru-RU")}-{(new Date(parseInt(obj.end) * 1000)).toLocaleDateString("ru-RU")}</p>
         </div>
       });
 
@@ -25,71 +48,83 @@ export class Home extends Component {
           <div className="uk-card-body uk-padding-small">
             {sprints}
           </div>
-          {/* <div className="uk-card-footer uk-padding-small">
-            <a href="#" className="uk-button uk-button-link">Поробнее</a>
-          </div> */}
         </div>
       </div>
     })
   }
 
   render() {
-    const projects = [
-      {name: "Проект 1", opened: 1000, closed: 256, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-      {name: "Проект 2", opened: 200, closed: 77, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-      {name: "Проект 3", opened: 394, closed: 123, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-      {name: "Проект 4", opened: 375, closed: 321, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-    ]
+    let html = this.state.loading ? 
+      <div className="uk-container" >
+        <span  data-uk-spinner="ratio: 5" className="uk-position-center uk-text-center"></span>
+      </div>
+    : 
+      Home.renderAll(this.state);
 
-    const boards = [
-      {name: "Доска 1", opened: 900, closed: 256, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-      {name: "Доска 2", opened: 500, closed: 77, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-      {name: "Доска 3", opened: 394, closed: 123, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-      {name: "Доска 4", opened: 375, closed: 321, sprint: [
-        {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
-        {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
-        {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
-        {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
-      ]},
-    ]
+    return (
+      <div>
+        {html}
+      </div>
+    );
+  }
 
-    const project_list = this.make_list(projects, "project");
-    const board_list = this.make_list(boards, "board");
+  static renderAll(state) {
+    // const projects = [
+      // {name: "Проект 1", opened: 1000, closed: 256, sprint: [
+      //   {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+      //   {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+      //   {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+      //   {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+      // ]},
+      // {name: "Проект 2", opened: 200, closed: 77, sprint: [
+      //   {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+      //   {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+      //   {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+      //   {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+      // ]},
+      // {name: "Проект 3", opened: 394, closed: 123, sprint: [
+      //   {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+      //   {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+      //   {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+      //   {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+      // ]},
+      // {name: "Проект 4", opened: 375, closed: 321, sprint: [
+      //   {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+      //   {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+      //   {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+      //   {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+      // ]},
+    // ]
+
+    // const boards = [
+    //   {name: "Доска 1", opened: 900, closed: 256, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    //   {name: "Доска 2", opened: 500, closed: 77, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    //   {name: "Доска 3", opened: 394, closed: 123, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    //   {name: "Доска 4", opened: 375, closed: 321, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    // ]
+
+    const project_list = Home.make_list(state.projects, "project");
+    const board_list = Home.make_list(state.boards, "board");
 
     return (
       <div className="uk-padding">

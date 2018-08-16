@@ -49,12 +49,134 @@ namespace ytpmd.Controllers
 			return projectsForCurrentUser;
         }
 
+        public class BoardsData {
+            [JsonProperty("boards")]
+            public List<BoardData> Boards;
+            [JsonProperty("projects")]
+            public List<string> Projects;
+        }
+
+        public class BoardData {
+            [JsonProperty("name")]
+            public string Name { get; set; }
+            [JsonProperty("opened")]
+            public string Opened { get; set; }
+            [JsonProperty("closed")]
+            public string Closed { get; set; }
+            [JsonProperty("sprint")]
+            public List<SprintData> Sprints;
+        }
+        public class SprintData {
+            [JsonProperty("name")]
+            public string Name { get; set; }
+            [JsonProperty("task_count")]
+            public string TaskCount { get; set; }
+            [JsonProperty("start")]
+            public string Start { get; set; }
+            [JsonProperty("end")]
+            public string End { get; set; }
+        }
+
+    // const boards = [
+    //   {name: "Доска 1", opened: 900, closed: 256, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    //   {name: "Доска 2", opened: 500, closed: 77, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    //   {name: "Доска 3", opened: 394, closed: 123, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    //   {name: "Доска 4", opened: 375, closed: 321, sprint: [
+    //     {name: 'Sprint 1', task_count: 33, start: '2018-01-01', end: '2018-01-31'}, 
+    //     {name: 'Sprint 2', task_count: 36, start: '2018-02-01', end: '2018-02-28'}, 
+    //     {name: 'Sprint 3', task_count: 64, start: '2018-03-01', end: '2018-03-31'}, 
+    //     {name: 'Sprint 4', task_count: 52, start: '2018-04-01', end: '2018-04-30'}
+    //   ]},
+    // ]
+
         [HttpGet("[action]")]
-        //public IEnumerable<WeatherForecast> WeatherForecasts()
-        public async Task<ResultData> Dashboard()
+        public async Task<BoardsData> Boards()
         {
-            const string version_str = "Sprint 4";
-            const string board_str = "Разработка проекта BILL-admin";
+            YouTrackCredential credential;
+            using (StreamReader r = new StreamReader("credential.json"))
+            {
+                credential = JsonConvert.DeserializeObject<YouTrackCredential>(r.ReadToEnd());
+            }
+            var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
+
+            // Поиск параметров спринта (время начала)
+            var boards_service = connection.CreateAgileBoardService();
+            var boards = await boards_service.GetAgileBoards();
+            Console.WriteLine(boards);
+            var all_boards = new List<BoardData>();
+            foreach (var b in boards) {
+                if (b.Projects.Count == 0)
+                    continue;
+                if (b.Sprints.Count == 0)
+                    continue;
+                bool has_billmgr_project = false;
+                foreach (var p in b.Projects) {
+                    if (p.Id == "ba" || p.Id == "bc") {
+                        has_billmgr_project = true;
+                        break;
+                    }
+                }
+                if (has_billmgr_project == false)
+                    continue;
+                var board_data = new BoardData();
+                board_data.Name = b.Name;
+                Console.WriteLine(JsonConvert.SerializeObject(b));
+                var _sprints = new List<Task<Sprint>>();
+                foreach (var s in b.Sprints) {
+                    Console.WriteLine(JsonConvert.SerializeObject(s));
+                    if (b.Id.Length != 0 && s.Id.Length != 0) {
+                        _sprints.Add(boards_service.GetSprint(b.Id, s.Id));
+                    }
+                }
+                if (_sprints.Count == 0)
+                    continue;
+                var sprints = await Task.WhenAll(_sprints);
+                board_data.Sprints = new List<SprintData>();
+
+                foreach (var s in sprints.Reverse()) {
+                    if (s.Start.HasValue == false || s.Finish.HasValue == false)
+                        continue;
+
+                    Console.WriteLine(JsonConvert.SerializeObject(s));
+                    var sprint = new SprintData();
+                    sprint.Name = s.Version;
+                    sprint.Start = s.Start.Value.ToUnixTimeSeconds().ToString();
+                    sprint.End = s.Finish.Value.ToUnixTimeSeconds().ToString();
+                    board_data.Sprints.Add(sprint);
+                }
+                if (board_data.Sprints.Count == 0)
+                    continue;
+                all_boards.Add(board_data);
+            }
+
+            return new BoardsData {
+                Boards = all_boards,
+                Projects = new List<string>()
+            };
+        }
+
+        [HttpGet("[action]/{board_str}/{version_str}")]
+        public async Task<ResultData> Dashboard(string board_str, string version_str)
+        {
+            // const string version_str = "Sprint 4";
+            // const string board_str = "Разработка проекта BILL-admin";
+            Console.WriteLine(board_str);
+            Console.WriteLine(version_str);
 
             YouTrackCredential credential;
             using (StreamReader r = new StreamReader("credential.json"))
@@ -64,11 +186,10 @@ namespace ytpmd.Controllers
             var connection = new UsernamePasswordConnection("http://youtrack.ispsystem.net:8080", credential.username, credential.password);
 
             // Поиск параметров спринта (время начала)
-            var agilesettings = new AgileSettings();
             var boards_service = connection.CreateAgileBoardService();
             var boards = await boards_service.GetAgileBoards();
 
-            AgileSettings board = new AgileSettings();
+            AgileSettings board = null;
             foreach (var b in boards) {
                 if (b.Name.Equals(board_str)) {
                     board = b;
@@ -76,7 +197,7 @@ namespace ytpmd.Controllers
                 }
             }
 
-            if (board.Id.Length == 0)
+            if (board == null || board.Id.Length == 0)
                 throw new SystemException("board not found");
 
             var _sprints = new List<Task<Sprint>>();
@@ -90,6 +211,7 @@ namespace ytpmd.Controllers
 			foreach (var s in sprints) {
 				if (s.Version.Equals(version_str)) {
                     sprint = s;
+                    break;
 				}
 			}
 
@@ -100,8 +222,8 @@ namespace ytpmd.Controllers
 			var version_end = new DateTime(sprint.Finish.Value.DateTime.Year, sprint.Finish.Value.DateTime.Month, sprint.Finish.Value.DateTime.Day, 23, 59, 59);
 
             var issues_service = connection.CreateIssuesService();
-            var ba_issues = await issues_service.GetIssuesInProject("ba", "#{" + version_str + "} и Подсистема: -Тестирование и -Docs и Подзадача: -ba-842 и Тип: -{Пользовательская история} )", 0, 250);
-            var bc_issues = await issues_service.GetIssuesInProject("bc", "#{" + version_str + "} и Подсистема: Backend и -Docs )", 0, 250);
+            var ba_issues = await issues_service.GetIssuesInProject("ba", "Спринт: {" + version_str + "} и Подсистема: Разработка и тег: -Docs и Подзадача: -ba-842 и Тип: -{Пользовательская история}", 0, 250);
+            var bc_issues = await issues_service.GetIssuesInProject("bc", "Спринт: {" + version_str + "} и Подсистема: Backend и тег: -Docs", 0, 250);
             var issues = ba_issues.Concat(bc_issues);
 
 			var _issues_changes = new List<Task<(string, IEnumerable<Change>)>>();
@@ -124,6 +246,7 @@ namespace ytpmd.Controllers
                 IssueStateItem last_state = null;
                 bool in_sprint = false; // Спринт
                 var _fields = i.Fields;
+                DateTime? issue_start_date = null;
                 foreach(var f in _fields) {
                     if (f.Name.Equals("Спринт")) {
                         foreach(var v in f.AsCollection()) {
@@ -134,11 +257,15 @@ namespace ytpmd.Controllers
                             }
                         }
                     }
+                    if (f.Name.Equals("created")) {
+                        issue_start_date = f.AsDateTime();
+                        Console.WriteLine(issue_start_date.Value.ToString());
+                    }
                 }
 
                 foreach (var c in issues_changes[i.Id] ) {
                     String state_name = "";
-                    foreach (var f in c.Fields) {
+                    foreach (var f in c.Fields) {                        
                         if (f.Name.Equals("Спринт")) {
                             foreach (var cf in f.To.AsCollection()) {
                                 var r = JsonConvert.DeserializeObject<List<String>>(cf);
@@ -152,7 +279,7 @@ namespace ytpmd.Controllers
                                     if (version_start < c.ForField("updated").To.AsDateTime())
                                         last_update.Add(i.Id, c.ForField("updated").To.AsDateTime());
                                     else
-                                        last_update.Add(i.Id, version_start);
+                                        last_update.Add(i.Id, issue_start_date.HasValue && issue_start_date.Value > version_start ? issue_start_date.Value : version_start);
                                 }
                             }
                         }
@@ -168,12 +295,12 @@ namespace ytpmd.Controllers
                     string state = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).From.AsString()).First();
                     var datetime = c.ForField("updated").To.AsDateTime();
                     if (!last_update.ContainsKey(i.Id)) {
-                        //last_update.Add(i.Id, new DateTime(1970, 1, 1, 0, 0, 0));
-                        last_update.Add(i.Id, version_start);
+                        last_update.Add(i.Id, issue_start_date.HasValue && issue_start_date.Value > version_start ? issue_start_date.Value : version_start);
                     }
 
                     last_state = new IssueStateItem {
                         Id = i.Id,
+                        Summary = i.Summary,
                         Status = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).To.AsString()).First(),
                         Start = GetUnixTimeString(datetime)
                     };
@@ -190,6 +317,7 @@ namespace ytpmd.Controllers
 
                     res_list.Add( new IssueStateItem {
                         Id = i.Id,
+                        Summary = i.Summary,
                         Status = state,
                         Start = GetUnixTimeString(last_update[i.Id]),
                         End = GetUnixTimeString(datetime),
@@ -223,8 +351,9 @@ namespace ytpmd.Controllers
                     if (status != "") {
                         var state = new IssueStateItem {
                             Id = i.Id,
+                            Summary = i.Summary,
                             Status = status,
-                            Start = GetUnixTimeString(version_start),
+                            Start = GetUnixTimeString(issue_start_date.HasValue && issue_start_date.Value > version_start ? issue_start_date.Value : version_start),
                             End = GetUnixTimeString(DateTime.Now)
                         };
                         res_list.Add(state);
@@ -260,7 +389,7 @@ namespace ytpmd.Controllers
                         work.Id = item_works.Key;
                         work.Date = GetUnixTimeString(item.Date.Value);
                         work.Duration = item.Duration.TotalMinutes.ToString();
-                        Console.WriteLine(item_works.Key);
+                        Console.WriteLine(work.Id);
                         Console.WriteLine(item.Date);
                         Console.WriteLine(item.Duration);
                         Console.WriteLine(item.Description);
@@ -275,19 +404,6 @@ namespace ytpmd.Controllers
                     }
                 }
             }
-
-            /*
-                        public string Date { get; set; }
-            public string Duration { get; set; }
-            public string WorkType { get; set; }
-            public string Description { get; set; }
-            public string Author { get; set; }
-
-                        public string Date { get; set; }
-            public string Duration { get; set; }
-            public string WorkType { get; set; }
-            public string Description { get; set; }
-            public string Author { get; set; } */
             
             return new ResultData {
                 ListData = res_list,
@@ -317,6 +433,7 @@ namespace ytpmd.Controllers
 
         public class IssueStateItem {
             public string Id { get; set; }
+            public string Summary { get; set; }
             public string Status { get; set; }
             public string Start { get; set; }
             public string End { get; set; }

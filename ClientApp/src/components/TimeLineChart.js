@@ -38,7 +38,7 @@ export class TimeLineChart extends Component {
         });
         const height = unique_line_ids.length * 41 + 40;
         chart.draw(data, {
-            width: 1350, 
+            width: 1800, 
             height: height,
             tooltip: {isHtml: true},
             colors: _colors,
