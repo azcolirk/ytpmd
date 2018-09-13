@@ -247,7 +247,12 @@ namespace ytpmd.Controllers
                 bool in_sprint = false; // Спринт
                 var _fields = i.Fields;
                 DateTime? issue_start_date = null;
+                string priority = "";
                 foreach(var f in _fields) {
+                    if (f.Name.Equals("Priority") || f.Name.Equals("Приоритет")) {
+                        priority = f.AsString();
+                        Console.WriteLine("f.Name: " + priority);
+                    }
                     if (f.Name.Equals("Спринт")) {
                         foreach(var v in f.AsCollection()) {
                             Console.WriteLine(v + " <> " + version_str);
@@ -301,6 +306,7 @@ namespace ytpmd.Controllers
                     last_state = new IssueStateItem {
                         Id = i.Id,
                         Summary = i.Summary,
+                        Priority = priority,
                         Status = JsonConvert.DeserializeObject<List<String>>(c.ForField(state_name).To.AsString()).First(),
                         Start = GetUnixTimeString(datetime)
                     };
@@ -318,6 +324,7 @@ namespace ytpmd.Controllers
                     res_list.Add( new IssueStateItem {
                         Id = i.Id,
                         Summary = i.Summary,
+                        Priority = priority,
                         Status = state,
                         Start = GetUnixTimeString(last_update[i.Id]),
                         End = GetUnixTimeString(datetime),
@@ -352,6 +359,7 @@ namespace ytpmd.Controllers
                         var state = new IssueStateItem {
                             Id = i.Id,
                             Summary = i.Summary,
+                            Priority = priority,
                             Status = status,
                             Start = GetUnixTimeString(issue_start_date.HasValue && issue_start_date.Value > version_start ? issue_start_date.Value : version_start),
                             End = GetUnixTimeString(DateTime.Now)
@@ -434,6 +442,7 @@ namespace ytpmd.Controllers
         public class IssueStateItem {
             public string Id { get; set; }
             public string Summary { get; set; }
+            public string Priority { get; set; }
             public string Status { get; set; }
             public string Start { get; set; }
             public string End { get; set; }
