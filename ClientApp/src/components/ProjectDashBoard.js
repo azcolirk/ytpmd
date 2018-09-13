@@ -36,6 +36,7 @@ export class ProjectDashBoard extends Component {
     super(props);
     this.state = { 
       task_id_name: new Array(),
+      task_id_priority: new Array(),
       timeline_data: [],
       work_data: [],
       sprint: "",
@@ -66,8 +67,10 @@ export class ProjectDashBoard extends Component {
         var map = new Map();
         var time_map = new Map();
         var task_id_name = new Array();
+        var task_id_priority = new Array();
         data.listdata.forEach(function(e) {
-          task_id_name[e.id] = [e.summary];
+          task_id_name[e.id] = e.summary;
+          task_id_priority[e.id] = e.priority;
           if (map.has(e.id) === false) {
             map.set(e.id, []);
             time_map.set(e.id, {
@@ -121,6 +124,14 @@ export class ProjectDashBoard extends Component {
           tasks: [],
           count: 0
         };
+        local_task_status['Дубликат'] = {
+          tasks: [],
+          count: 0
+        };
+        local_task_status['На согласовании'] = {
+          tasks: [],
+          count: 0
+        };
         local_task_status['Готово'] = {
           tasks: [],
           count: 0
@@ -151,6 +162,7 @@ export class ProjectDashBoard extends Component {
           } else {
             local_project_tasks.on_sprint_start++;
           }
+          console.log(value.status);
           local_task_status[value.status].tasks.push(key);
           local_task_status[value.status].count = local_task_status[value.status].count + 1;
         });
@@ -159,6 +171,7 @@ export class ProjectDashBoard extends Component {
 
         this.setState({ 
           task_id_name: task_id_name,
+          task_id_priority: task_id_priority,
           timeline_data: new_data,
           work_data: data.workdata,
           sprint: data.sprint,
@@ -172,19 +185,26 @@ export class ProjectDashBoard extends Component {
       });
   }
 
-  static task_list_by_state(task_id_name, tasks_by_status) {
+  static task_list_by_state(task_id_name, task_id_priority, tasks_by_status) {
     console.log(tasks_by_status);
     return tasks_by_status.map(function(_obj, id) {
       console.log(_obj);
+      var sorted_tasks = {
+        "Нео" : new Array(),
+        "Кри" : new Array(),
+        "Сер" : new Array(),
+        "Обы" : new Array(),
+        "Нез" : new Array(),
+      };
       const task_list = _obj.v.tasks.map(function(obj, id) {
         return <div key={id}>
-          <p className="uk-margin-remove-top uk-margin-remove-bottom"><a href={"http://youtrack.ispsystem.net:8080/issue/" + obj} target="_blank">{obj}</a> - {task_id_name[obj]}</p>
+          <p className="uk-margin-remove-top uk-margin-remove-bottom">{"[" + task_id_priority[obj].substring(0, 3) + "] "}<a href={"http://youtrack.ispsystem.net:8080/issue/" + obj} target="_blank">{obj}</a> - {task_id_name[obj]}</p>
         </div>
       });
 
       return <div key={id}> 
           <h5 className="uk-margin-remove-bottom uk-text-large uk-text-bold">{_obj.k}</h5>
-          <div className="uk-padding-small">
+          <div className="uk-padding-small uk-text-large">
             {task_list}
           </div>
       </div>
@@ -233,16 +253,17 @@ export class ProjectDashBoard extends Component {
     });
 
     var task_status_array = [
-      {k: 'Готово', v: state.task_status['Готово']},
-      {k: 'Готово к мерджу', v: state.task_status['Готово к мерджу']},
-      {k: 'Аннулирована', v: state.task_status['Аннулирована']},
-      {k: 'В тестировании', v: state.task_status['В тестировании']},
-      {k: 'Подлежит проверке', v: state.task_status['Подлежит проверке']},
-      {k: 'В обработке', v: state.task_status['В обработке']},
-      {k: 'Открыта', v: state.task_status['Открыта']},
+      {k: 'Готово', v: state.task_status['Готово'], s: "uk-text-success"},
+      {k: 'Готово к мерджу', v: state.task_status['Готово к мерджу'], s: "uk-text-success"},
+      {k: 'Дубликат', v: state.task_status['Дубликат'], s: "uk-text-warning"},
+      {k: 'Аннулирована', v: state.task_status['Аннулирована'], s: "uk-text-warning"},
+      {k: 'В тестировании', v: state.task_status['В тестировании'], s: "uk-text-warning"},
+      {k: 'Подлежит проверке', v: state.task_status['Подлежит проверке'], s: "uk-text-warning"},
+      {k: 'В обработке', v: state.task_status['В обработке'], s: "uk-text-danger"},
+      {k: 'Открыта', v: state.task_status['Открыта'], s: "uk-text-danger"},
     ];
 
-    const task_list = ProjectDashBoard.task_list_by_state(state.task_id_name, task_status_array);
+    const task_list = ProjectDashBoard.task_list_by_state(state.task_id_name, state.task_id_priority, task_status_array);
 
     const status_list = task_status_array.map(function(value, id) {
       return <div className="uk-clearfix" data-uk-leader="fill: _" key={id}>
@@ -250,7 +271,7 @@ export class ProjectDashBoard extends Component {
                 <div className="uk-panel" >{value.k}</div>
               </div>
               <div className="uk-float-right">
-                <div className="uk-panel">{value.v.count}</div>
+                <div className={"uk-panel " + value.s}>{value.v.count}</div>
               </div>
             </div>;
     });
@@ -326,7 +347,7 @@ export class ProjectDashBoard extends Component {
         <div className="uk-padding uk-grid-divider uk-child-width-expand@s" data-uk-grid>
           <div className="uk-width-4-4">
             <div className="uk-section uk-padding-remove-vertical">
-              <h2><a className="uk-link-heading" href={ url }>{ title }</a></h2>
+              <h2><a className="uk-link-heading uk-text-bold" href={ url }>{ title }</a></h2>
               <div className="uk-float-left uk-width-1-3 uk-padding-small">
                   <div className="uk-panel">
                     <div className="uk-text-large uk-text-bold">{project_tasks_total}</div>
@@ -350,43 +371,6 @@ export class ProjectDashBoard extends Component {
               <TimeLineChart graphName="timeline" graphData={state.timeline_data} graphColors={colors}/>
             </div>
           </div>
-          {/* <div>
-            <div className="uk-section uk-padding-remove-vertical">
-              { <h3>Участники спринта</h3>}
-              { <div className="uk-section uk-padding-remove-vertical">
-                <h4>Планирование</h4>
-                <div>
-                  <ul className="uk-list">
-                    {employee_planning}
-                  </ul>
-                </div>
-              </div>
-              <div className="uk-section uk-padding-remove-vertical">
-                <h4>Проектирование</h4>
-                <div>
-                  <ul className="uk-list">
-                    {employee_project}
-                  </ul>
-                </div>
-              </div>
-              <div className="uk-section uk-padding-remove-vertical">
-                <h4>Разработка</h4>
-                <div>
-                  <ul className="uk-list">
-                    {employee_development}
-                  </ul>
-                </div>
-              </div>
-              <div className="uk-section uk-padding-remove-vertical">
-                <h4>Тестирование</h4>
-                <div>
-                  <ul className="uk-list">
-                    {employee_testing}
-                  </ul>
-                </div>
-              </div> }
-            </div>
-          </div> */}
         </div>  
       );
   }
