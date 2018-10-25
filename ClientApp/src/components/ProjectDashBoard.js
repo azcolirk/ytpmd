@@ -203,7 +203,7 @@ export class ProjectDashBoard extends Component {
       });
 
       return <div key={id}> 
-          <h5 className="uk-margin-remove-bottom uk-text-large uk-text-bold">{_obj.k}</h5>
+          <h5 className="uk-margin-remove-bottom uk-text-large uk-text-bold">{_obj.k} ({_obj.v.tasks.length})</h5>
           <div className="uk-padding-small uk-text-large">
             {task_list}
           </div>
